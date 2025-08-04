@@ -1,38 +1,21 @@
-version: 0.2
+name: Trigger AWS CodeBuild
 
-env:
-  variables:
-    S3_BUCKET: "innovar-codebuild"
-    S3_KEY: "bridgelink/bridgelink.zip"
-    INSTANCE_ID: "i-081a9ddfb4dffd83f"
-    REGION: "us-east-1"
+on:
+  push:
+    branches:
+      - main  # or your branch
 
-phases:
-  install:
-    runtime-versions:
-      java: corretto17
-    commands:
-      - echo "Installing Ant and Zip..."
-      - yum install -y ant zip awscli
-  build:
-    commands:
-      - echo "Building project with Ant..."
-      - ant -f server/mirth-build.xml
-  post_build:
-    commands:
-      - echo "Zipping server/setup folder..."
-      - zip -r output.zip server/setup
-      - echo "Uploading zip to S3..."
-      - aws s3 cp output.zip s3://$S3_BUCKET/$S3_KEY --region $REGION
-      - echo "Triggering SSM command on Windows EC2..."
-      - |
-        aws ssm send-command \
-          --instance-ids $INSTANCE_ID \
-          --document-name "AWS-RunPowerShellScript" \
-          --comment "Download zip and run install4jc" \
-          --parameters commands=["aws s3 cp s3://$S3_BUCKET/$S3_KEY C:\\\\Users\\\\Administrator\\\\output.zip","Expand-Archive -Path C:\\\\Users\\\\Administrator\\\\output.zip -DestinationPath C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_setup_clean","install4jc -d C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j"] \
-          --region $REGION
+jobs:
+  codebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-artifacts:
-  files:
-    - output.zip
+      - name: Start AWS CodeBuild
+        run: |
+          aws codebuild start-build --project-name bridgelink-dev-project
