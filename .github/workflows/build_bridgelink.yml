@@ -1,45 +1,21 @@
-# This workflow will build a Java project with Ant
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-ant
-
-name: Build bridgelink
+name: Trigger AWS CodeBuild
 
 on:
   push:
     branches:
-      - bridgelink_development
-  pull_request:
-    branches:
-      - bridgelink_development
+      - main  # or your branch
 
 jobs:
-  build:
+  codebuild:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          java-version: '8'
-          java-package: 'jdk+fx'
-          distribution: 'zulu'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Build Bridgelink - signed
-        if: github.ref == 'refs/heads/bridgelink_development'
-        working-directory: server
-        run: ant -f mirth-build.xml
-
-      - name: Build Bridgelink - unsigned
-        if: github.ref != 'refs/heads/bridgelink_development'
-        working-directory: server
-        run: ant -f mirth-build.xml -DdisableSigning=true
-
-      - name: Package distribution
-        run: tar czf bridgelink.tar.gz -C server/ setup --transform 's|^setup|bridgelink/|'
-
-      - name: Create artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: bridgelink-build
-          path: bridgelink.tar.gz
+      - name: Start AWS CodeBuild
+        run: |
+          aws codebuild start-build --project-name bridgelink-dev-project
