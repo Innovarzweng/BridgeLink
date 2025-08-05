@@ -24,7 +24,7 @@ phases:
   post_build:
     commands:
       - echo "Zipping server/setup folder..."
-      - zip -r output.zip server/setup
+      - cd server/setup && zip -r ../../output.zip . && cd ../..
 
       - echo "Uploading zip to S3..."
       - aws s3 cp output.zip s3://$S3_BUCKET/$S3_KEY --region $REGION
