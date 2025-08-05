@@ -16,8 +16,8 @@ phases:
       - yum install -y ant zip awscli
   build:
     commands:
-      - echo "Building project with Ant..."
-      - ant -f server/mirth-build.xml build
+      - echo "Building project with Ant (UTF-8 encoding)..."
+      - ant -f server/mirth-build.xml -Dfile.encoding=UTF-8
   post_build:
     commands:
       - echo "Zipping server/setup folder..."
