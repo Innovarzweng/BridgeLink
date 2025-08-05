@@ -59,7 +59,6 @@ phases:
             \"& 'C:\Program Files\install4j11\bin\install4jc.exe' -L \\\"\$install4j_license_key\\\" -d 'C:\Users\Administrator\bridgelink_work_station\bridgelink_output' 'C:\Users\Administrator\bridgelink_work_station\bridgelink_config.install4j'\"
           ]}" \
           --region "$REGION" \
-          --query "Command.CommandId" \
           --output text)
 
 
