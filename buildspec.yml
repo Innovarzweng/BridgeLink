@@ -3,9 +3,10 @@ version: 0.2
 env:
   variables:
     S3_BUCKET: "innovar-codebuild"
-    S3_KEY: "bridgelink/bridgelink.zip"
+    S3_KEY: "bridgelink/bridgelink_clean_code.zip"
     INSTANCE_ID: "i-081a9ddfb4dffd83f"
     REGION: "us-east-1"
+    PRODUCT_NAME: "bridgelink"
 
 phases:
   install:
@@ -38,14 +39,17 @@ phases:
         COMMAND_ID=$(aws ssm send-command \
           --instance-ids "$INSTANCE_ID" \
           --document-name "AWS-RunPowerShellScript" \
-          --comment "Download zip and run install4jc" \
+          --comment "Download zip and run install4jc, then re-upload output" \
           --timeout-seconds 1800 \
           --parameters "{\"commands\":[
             \"\$bucket = '$S3_BUCKET'\",
             \"\$key = '$S3_KEY'\",
-            \"\$zip = 'C:\\\\Users\\\\Administrator\\\\output.zip'\",
             \"\$region = '$REGION'\",
+            \"\$zip = 'C:\\\\Users\\\\Administrator\\\\output.zip'\",
+            \"\$product_name = '$PRODUCT_NAME'\",
+            \"\$outzip = 'C:\\\\Users\\\\Administrator\\\\${PRODUCT_NAME}_codebuild_output.zip'\",
             \"\$install4j_license_key = '$INSTALL4J_LICENSE_KEY'\",
+            
 
             \"if (-not (Get-Command aws -ErrorAction SilentlyContinue)) {\",
             \"  Write-Host 'Installing AWS CLI...'\",
@@ -54,12 +58,20 @@ phases:
             \"  \$env:Path += ';C:\\\\Program Files\\\\Amazon\\\\AWSCLIV2\\\\'\",
             \"}\",
 
+            \"Write-Host 'Downloading setup archive from S3...'\",
             \"aws s3 cp 's3://$S3_BUCKET/$S3_KEY' \$zip --region \$region --only-show-errors\",
             \"if (!(Test-Path \$zip)) { throw 'S3 download failed' }\",
 
-            \"Expand-Archive -Path \$zip -DestinationPath 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_setup_clean' -Force\",
+            \"Expand-Archive -Path \$zip -DestinationPath 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_setup_clean' -Force\",
 
-            \"& 'C:\\\\Program Files\\\\install4j11\\\\bin\\\\install4jc.exe' -L \$install4j_license_key -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
+            \"Write-Host 'Running install4jc...'\",
+            \"& 'C:\\\\Program Files\\\\install4j11\\\\bin\\\\install4jc.exe' -L \$install4j_license_key -d 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_config.install4j'\",
+
+            \"Write-Host 'Zipping build output...'\",
+            \"Compress-Archive -Path 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_output\\\\*' -DestinationPath \$outzip -Force\",
+
+            \"Write-Host 'Uploading build output to S3...'\",
+            \"aws s3 cp \$outzip 's3://innovar-codebuild/bridgelink/bridgelink_codebuild_output.zip' --region \$region --only-show-errors\"
           ]}" \
           --region "$REGION" \
           --query "Command.CommandId" \
