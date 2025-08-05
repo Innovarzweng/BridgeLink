@@ -47,9 +47,8 @@ phases:
             \"\$region = '$REGION'\",
             \"\$zip = 'C:\\\\Users\\\\Administrator\\\\output.zip'\",
             \"\$product_name = '$PRODUCT_NAME'\",
-            \"\$outzip = 'C:\\\\Users\\\\Administrator\\\\${PRODUCT_NAME}_codebuild_output.zip'\",
+            \"\$outzip = \\\"C:\\\\Users\\\\Administrator\\\\\${product_name}_codebuild_output.zip\\\"\",
             \"\$install4j_license_key = '$INSTALL4J_LICENSE_KEY'\",
-            
 
             \"if (-not (Get-Command aws -ErrorAction SilentlyContinue)) {\",
             \"  Write-Host 'Installing AWS CLI...'\",
@@ -62,13 +61,13 @@ phases:
             \"aws s3 cp 's3://$S3_BUCKET/$S3_KEY' \$zip --region \$region --only-show-errors\",
             \"if (!(Test-Path \$zip)) { throw 'S3 download failed' }\",
 
-            \"Expand-Archive -Path \$zip -DestinationPath 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_setup_clean' -Force\",
+            \"Expand-Archive -Path \$zip -DestinationPath \\\"C:\\\\Users\\\\Administrator\\\\\${product_name}_work_station\\\\bridgelink_setup_clean\\\" -Force\",
 
             \"Write-Host 'Running install4jc...'\",
-            \"& 'C:\\\\Program Files\\\\install4j11\\\\bin\\\\install4jc.exe' -L \$install4j_license_key -d 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_config.install4j'\",
+            \"& 'C:\\\\Program Files\\\\install4j11\\\\bin\\\\install4jc.exe' -L \$install4j_license_key -d \\\"C:\\\\Users\\\\Administrator\\\\\${product_name}_work_station\\\\bridgelink_output\\\" \\\"C:\\\\Users\\\\Administrator\\\\\${product_name}_work_station\\\\bridgelink_config.install4j\\\"\",
 
             \"Write-Host 'Zipping build output...'\",
-            \"Compress-Archive -Path 'C:\\\\Users\\\\Administrator\\\\${product_name}_work_station\\\\bridgelink_output\\\\*' -DestinationPath \$outzip -Force\",
+            \"Compress-Archive -Path \\\"C:\\\\Users\\\\Administrator\\\\\${product_name}_work_station\\\\bridgelink_output\\\\*\\\" -DestinationPath \$outzip -Force\",
 
             \"Write-Host 'Uploading build output to S3...'\",
             \"aws s3 cp \$outzip 's3://innovar-codebuild/bridgelink/bridgelink_codebuild_output.zip' --region \$region --only-show-errors\"
@@ -76,6 +75,7 @@ phases:
           --region "$REGION" \
           --query "Command.CommandId" \
           --output text)
+
 
         echo "SSM Command ID: $COMMAND_ID"
 
