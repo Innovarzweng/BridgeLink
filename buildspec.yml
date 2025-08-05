@@ -13,7 +13,7 @@ phases:
     runtime-versions:
       java: corretto17
     commands:
-      - echo "Installing Ant and Zip..."
+      - echo "Installing Ant, Zip, and AWS CLI..."
       - export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
       - yum install -y ant zip awscli
 
@@ -24,13 +24,13 @@ phases:
 
   post_build:
     commands:
-      - echo "Zipping server/setup folder..."
+      - echo "Zipping contents of server/setup folder (without parent dirs)..."
       - cd server/setup && zip -r ../../output.zip . && cd ../..
 
-      - echo "Uploading zip to S3..."
+      - echo "Uploading zip to S3 bucket..."
       - aws s3 cp output.zip s3://$S3_BUCKET/$S3_KEY --region $REGION
 
-      - echo "Triggering SSM command on Windows EC2..."
+      - echo "Triggering SSM command on Windows EC2 instance..."
       - |
         COMMAND_ID=$(aws ssm send-command \
           --instance-ids "$INSTANCE_ID" \
@@ -40,23 +40,23 @@ phases:
           --parameters "{\"commands\":[
             \"\$bucket = '$S3_BUCKET'\",
             \"\$key = '$S3_KEY'\",
-            \"\$zip = 'C:\\\\Users\\\\Administrator\\\\output.zip'\",
+            \"\$zip = 'C:/Users/Administrator/output.zip'\",
             \"\$region = '$REGION'\",
             \"\$install4j_license_key = '$INSTALL4J_LICENSE_KEY'\",
 
             \"if (-not (Get-Command aws -ErrorAction SilentlyContinue)) {\",
             \"  Write-Host 'Installing AWS CLI...'\",
-            \"  Invoke-WebRequest https://awscli.amazonaws.com/AWSCLIV2.msi -OutFile C:\\\\Windows\\\\Temp\\\\AWSCLIV2.msi\",
-            \"  Start-Process msiexec.exe -ArgumentList '/i C:\\\\Windows\\\\Temp\\\\AWSCLIV2.msi /quiet' -Wait\",
-            \"  \$env:Path += ';C:\\\\Program Files\\\\Amazon\\\\AWSCLIV2\\\\'\",
+            \"  Invoke-WebRequest https://awscli.amazonaws.com/AWSCLIV2.msi -OutFile C:/Windows/Temp/AWSCLIV2.msi\",
+            \"  Start-Process msiexec.exe -ArgumentList '/i C:/Windows/Temp/AWSCLIV2.msi /quiet' -Wait\",
+            \"  \$env:Path += ';C:/Program Files/Amazon/AWSCLIV2/'\",
             \"}\",
 
             \"aws s3 cp 's3://$S3_BUCKET/$S3_KEY' \$zip --region \$region --only-show-errors\",
             \"if (!(Test-Path \$zip)) { throw 'S3 download failed' }\",
 
-            \"Expand-Archive -Path \$zip -DestinationPath 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_setup_clean' -Force\",
+            \"Expand-Archive -Path \$zip -DestinationPath 'C:/Users/Administrator/bridgelink_work_station/bridgelink_setup_clean' -Force\",
 
-            \"& 'C:\\\\Program Files\\\\install4j11\\\\bin\\\\install4jc.exe' -L \$install4j_license_key -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
+            \"& 'C:/Program Files/install4j11/bin/install4jc.exe' -L \\\"\$install4j_license_key\\\" -d 'C:/Users/Administrator/bridgelink_work_station/bridgelink_output' 'C:/Users/Administrator/bridgelink_work_station/bridgelink_config.install4j'\"
           ]}" \
           --region "$REGION" \
           --query "Command.CommandId" \
