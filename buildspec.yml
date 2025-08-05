@@ -19,20 +19,33 @@ phases:
     commands:
       - echo "Building project with Ant (UTF-8 encoding)..."
       - ant -f server/mirth-build.xml -Dfile.encoding=UTF-8
-  post_build:
-    commands:
-      - echo "Zipping server/setup folder..."
-      - zip -r output.zip server/setup
-      - echo "Uploading zip to S3..."
-      - aws s3 cp output.zip s3://$S3_BUCKET/$S3_KEY --region $REGION
-      - echo "Triggering SSM command on Windows EC2..."
-      - |
-        aws ssm send-command \
-          --instance-ids $INSTANCE_ID \
-          --document-name "AWS-RunPowerShellScript" \
-          --comment "Download zip and run install4jc" \
-          --parameters commands=["aws s3 cp s3://$S3_BUCKET/$S3_KEY C:\\\\Users\\\\Administrator\\\\output.zip","Expand-Archive -Path C:\\\\Users\\\\Administrator\\\\output.zip -DestinationPath C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_setup_clean","install4jc -d C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j"] \
-          --region $REGION
+post_build:
+  commands:
+    - echo "Zipping server/setup folder..."
+    - zip -r output.zip server/setup
+    - echo "Uploading zip to S3..."
+    - aws s3 cp output.zip s3://$S3_BUCKET/$S3_KEY --region $REGION
+    - echo "Triggering SSM command on Windows EC2..."
+    - |
+      aws ssm send-command \
+        --instance-ids $INSTANCE_ID \
+        --document-name "AWS-RunPowerShellScript" \
+        --comment "Download zip and run install4jc" \
+        --timeout-seconds 1800 \
+        --parameters '{
+          "commands": [
+            "$bucket = \"$S3_BUCKET\"",
+            "$key = \"$S3_KEY\"",
+            "$zip = \"C:\\Users\\Administrator\\output.zip\"",
+            "aws s3 cp \"s3://$bucket/$key\" $zip --region $REGION --only-show-errors",
+            "if (!(Test-Path $zip)) { throw \"S3 download failed\" }",
+            "Expand-Archive -Path $zip -DestinationPath \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_setup_clean\" -Force",
+            "install4jc -d \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_output\" \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_config.install4j\""
+          ]
+        }' \
+        --region $REGION
+        --timeout-seconds 1200
+
 
 artifacts:
   files:
