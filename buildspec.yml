@@ -42,6 +42,7 @@ phases:
             \"\$key = '$S3_KEY'\",
             \"\$zip = 'C:\\\\Users\\\\Administrator\\\\output.zip'\",
             \"\$region = '$REGION'\",
+            \"\$install4j_license_key = '$INSTALL4J_LICENSE_KEY'\",
 
             \"if (-not (Get-Command aws -ErrorAction SilentlyContinue)) {\",
             \"  Write-Host 'Installing AWS CLI...'\",
@@ -55,7 +56,7 @@ phases:
 
             \"Expand-Archive -Path \$zip -DestinationPath 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_setup_clean' -Force\",
 
-            \"& 'C:\Program Files\install4j11\bin\install4jc.exe' -L '$INSTALL4J_LICENSE_KEY' -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
+            \"& 'C:\Program Files\install4j11\bin\install4jc.exe' -L '$install4j_license_key' -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
           ]}" \
           --region "$REGION" \
           --query "Command.CommandId" \
