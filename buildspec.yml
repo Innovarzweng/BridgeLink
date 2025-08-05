@@ -54,7 +54,7 @@ phases:
 
             \"Expand-Archive -Path \$zip -DestinationPath 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_setup_clean' -Force\",
 
-            \"'C:\\\\Program Files\\\\install4j11\\\\bin\\\\install4jc' -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
+            \"& 'C:\\\\Program Files\\\\install4j11\\\\bin\\\\install4jc' -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
           ]}" \
           --region "$REGION" \
           --query "Command.CommandId" \
