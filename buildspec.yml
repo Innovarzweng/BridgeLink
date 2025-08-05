@@ -6,6 +6,7 @@ env:
     S3_KEY: "bridgelink/bridgelink.zip"
     INSTANCE_ID: "i-081a9ddfb4dffd83f"
     REGION: "us-east-1"
+    INSTALL4J_LICENSE_KEY: "L-M11-INNOVAR_HEALTHCARE#60766010001-3uzeyf539q6jut#6862"
 
 phases:
   install:
@@ -54,7 +55,7 @@ phases:
 
             \"Expand-Archive -Path \$zip -DestinationPath 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_setup_clean' -Force\",
 
-            \"& 'install4jc' -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
+            \"& 'C:\Program Files\install4j11\bin\install4jc.exe' -L $INSTALL4J_LICENSE_KEY -d 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_output' 'C:\\\\Users\\\\Administrator\\\\bridgelink_work_station\\\\bridgelink_config.install4j'\"
           ]}" \
           --region "$REGION" \
           --query "Command.CommandId" \
