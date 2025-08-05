@@ -6,7 +6,6 @@ env:
     S3_KEY: "bridgelink/bridgelink.zip"
     INSTANCE_ID: "i-081a9ddfb4dffd83f"
     REGION: "us-east-1"
-    INSTALL4J_LICENSE_KEY: "L-M11-INNOVAR_HEALTHCARE#60766010001-3uzeyf539q6jut#6862"
 
 phases:
   install:
@@ -29,6 +28,9 @@ phases:
 
       - echo "Uploading zip to S3 bucket..."
       - aws s3 cp output.zip s3://$S3_BUCKET/$S3_KEY --region $REGION
+
+      - echo "Retrieving Install4j license key from Parameter Store..."
+      - INSTALL4J_LICENSE_KEY=$(aws ssm get-parameter --name "/bridgelink/install4j_license_key" --with-decryption --region $REGION --query "Parameter.Value" --output text)
 
       - echo "Triggering SSM command on Windows EC2 instance..."
 
