@@ -13,6 +13,7 @@ phases:
       java: corretto17
     commands:
       - echo "Installing Ant and Zip..."
+      - export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
       - yum install -y ant zip awscli
   build:
     commands:
