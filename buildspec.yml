@@ -37,14 +37,13 @@ post_build:
             "$bucket = \"$S3_BUCKET\"",
             "$key = \"$S3_KEY\"",
             "$zip = \"C:\\Users\\Administrator\\output.zip\"",
-            "aws s3 cp \"s3://$bucket/$key\" $zip --region $REGION --only-show-errors",
+            "C:\\Program Files\\Amazon\\AWSCLIV2\\aws s3 cp \"s3://$bucket/$key\" $zip --region $REGION --only-show-errors",
             "if (!(Test-Path $zip)) { throw \"S3 download failed\" }",
             "Expand-Archive -Path $zip -DestinationPath \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_setup_clean\" -Force",
-            "install4jc -d \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_output\" \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_config.install4j\""
+            "C:\\Program Files\\install4j11\\bin\\install4jc -d \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_output\" \"C:\\Users\\Administrator\\bridgelink_work_station\\bridgelink_config.install4j\""
           ]
         }' \
         --region $REGION
-        --timeout-seconds 1200
 
 
 artifacts:
